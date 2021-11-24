@@ -5,18 +5,22 @@ import java.util.Random;
 import java.util.Vector;
 
 public class Model {
+    private int mode;
     private Buffer buffer;
-    private Generator generator;
+    private int countOfWorker;
     private Worker worker;
     private int countOfGenerators;
     private double lambda;
     private final int defaultCountRequests = 60;
+    private final double eps = 0.00001;
     private Draw draw;
 
-    public Model(int countOfGenerators, int countOfWorker, int countOfBuffer, double lambda) {
+    public Model(int countOfGenerators, int countOfWorker, int countOfBuffer, double lambda, int mode) {
+        this.mode = mode;
         buffer = new Buffer(countOfBuffer);
         worker = new Worker(countOfWorker, lambda);
         draw = new Draw(countOfGenerators, countOfBuffer, countOfWorker);
+        this.countOfWorker = countOfWorker;
         this.lambda = lambda;
         this.countOfGenerators = countOfGenerators;
     }
@@ -99,7 +103,75 @@ public class Model {
 
 
         }
-        draw.print();
+        if (mode == 1)
+        {
+            draw.print();
+        }
+        else
+        {
+            int numRequestsInGenerators[] = new int[countOfGenerators];
+            int numErrorRequestsInGenerators[] = new int[countOfGenerators];
+            double sumBuffTime[] = new double[countOfGenerators];
+            double countStayTime[] = new double[countOfGenerators];//Без отказных
+            double sumToWork[] = new double[countOfGenerators];
+            double sumTimeForWorkers[] = new double[countOfWorker];
+            double dispTimeForWorkers[] = new double[countOfGenerators];
+            double distTimeForBP[] = new double[countOfGenerators];
+            double deadline = currentTime;
+            for (Request i: outRequestVector)
+            {
+                numRequestsInGenerators[i.getNumOfGenerator()]++;
+                if (i.getTimeWorkerOutput()==0)
+                {
+                    numErrorRequestsInGenerators[i.getNumOfGenerator()]++;
+                }
+                else
+                {
+                    sumBuffTime[i.getNumOfGenerator()]+=i.getTimeBufferOutput()-i.getTimeBufferInput();
+                    sumToWork[i.getNumOfGenerator()]+=i.getTimeWorkerOutput()-i.getTimeWorkerInput();
+                    countStayTime[i.getNumOfGenerator()]++;
+
+                    dispTimeForWorkers[i.getNumOfGenerator()]+=(i.getTimeBufferOutput()-i.getTimeBufferInput())*(i.getTimeBufferOutput()-i.getTimeBufferInput());
+                    distTimeForBP[i.getNumOfGenerator()]+=(i.getTimeWorkerOutput()-i.getTimeWorkerInput())*(i.getTimeWorkerOutput()-i.getTimeWorkerInput());
+
+                }
+                sumTimeForWorkers[i.getNumOfWorker()] += i.getTimeWorkerOutput()-i.getTimeWorkerInput();
+
+            }
+          /*  for (int i=0; i<countOfGenerators; i++)
+            {
+                System.out.println("Количество заявок в "+i+" источнике: "+numRequestsInGenerators[i]+" Вероятность отказа: "+(double)numErrorRequestsInGenerators[i]/numRequestsInGenerators[i]);
+                System.out.println(String.format("Среднее время пребывание в БП: %.2f Среднее время обслуживания: %.2f Среднее время пребывания заявки в системе: %.2f", sumBuffTime[i]/countStayTime[i], sumToWork[i]/countStayTime[i], sumBuffTime[i]/countStayTime[i] +sumToWork[i]/countStayTime[i]));
+                System.out.println();
+            }
+*/
+            StringBuilder sb = new StringBuilder();
+            sb.append("     |Колво|Pотк |Tпреб| Тбп |Tобсл| Дбп |Добсл");
+            for (int i=0; i<countOfGenerators; i++)
+            {
+              sb.append("\n");
+              sb.append("И"+i+"   |");
+              if (numRequestsInGenerators[i]>9)
+              {
+                  sb.append(numRequestsInGenerators[i]+"   ");
+              }
+              else
+              {
+                  sb.append(numRequestsInGenerators[i]+"    ");
+              }
+              sb.append(String.format("|%.2f |",(double)numErrorRequestsInGenerators[i]/numRequestsInGenerators[i]));
+              sb.append(String.format("%.2f |%.2f |%.2f |", sumBuffTime[i]/countStayTime[i] +sumToWork[i]/countStayTime[i], sumBuffTime[i]/countStayTime[i], sumToWork[i]/countStayTime[i]));
+              sb.append(String.format("%.2f |%.2f ", distTimeForBP[i]/countStayTime[i] - (distTimeForBP[i]/(countStayTime[i]*countStayTime[i])),dispTimeForWorkers[i]/countStayTime[i] - (dispTimeForWorkers[i]/(countStayTime[i]*countStayTime[i]))));
+              sb.append("\n");
+            }
+            System.out.println(sb.toString());
+            for (int i=0; i<countOfWorker;i++)
+            {
+                System.out.println("Коэфициент использования прибора " + i + ": " + sumTimeForWorkers[i]/deadline);
+            }
+
+        }
+
         return requestVector;
     }
 
