@@ -50,7 +50,7 @@ public class Buffer {
         return true;
     }
 
-    public void putInBuffer(Request request, double currentTime) {
+    public String putInBuffer(Request request, double currentTime) {
         if (checkNonEntry(indexOfInput)) {
             buffer.set(indexOfInput, request);
             buffer.get(indexOfInput).setTimeBufferInput(currentTime);
@@ -62,13 +62,14 @@ public class Buffer {
                 if (checkNonEntry(indexOfInput)) {
                     buffer.set(indexOfInput, request);
                     buffer.get(indexOfInput).setTimeBufferInput(currentTime);
-                    return;
+                    return "    ";
                 } else {
                     incrementIndexOfInput();
                 }
             }
             incrementIndexOfInput();
             buffer.get(indexOldest).setTimeBufferOutput(currentTime);
+            String strErr = buffer.get(indexOldest).getRequestNumber();
             buffer.set(indexOldest, request);
             buffer.get(indexOldest).setTimeBufferInput(currentTime);
             for (int i = 0; i < countOfBuffers; i++) {
@@ -76,8 +77,9 @@ public class Buffer {
                     indexOldest = i;
                 }
             }
+            return strErr;
         }
-        return;
+        return "    ";
     }
 
     public Request popOutBuffer(double currentTime) {

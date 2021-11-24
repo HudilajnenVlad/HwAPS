@@ -66,7 +66,7 @@ public class Worker {
     public String drawWorker() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < countOfWorkers; i++) {
-            if (!workersEmployment.get(i)) {
+            if (workersEmployment.get(i)) {
                 String str = workers.get(i).getRequestNumber();
                 sb.append(str);
             } else {

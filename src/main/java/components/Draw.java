@@ -21,7 +21,7 @@ public class Draw {
     }
 
 
-    public void drawLineFirst(Request request,double currentTime, Buffer buffer, Worker worker, int countOfGenerators)
+    public void drawLineFirst(Request request,double currentTime, Buffer buffer, Worker worker, int countOfGenerators, String strErr)
     {
         StringBuilder sb = new StringBuilder();
         sb.append(printTime(currentTime));
@@ -37,6 +37,14 @@ public class Draw {
         }
         sb.append(worker.drawWorker());
         sb.append(buffer.drawBuffer());
+        if (strErr == "")
+        {
+            sb.append("     ");
+        }
+        else
+        {
+            sb.append(strErr);
+        }
         sb.append("\n");
         stringBuilder.append(sb.toString());
     }
@@ -65,6 +73,7 @@ public class Draw {
         }
         sb.append(worker.drawWorker());
         sb.append(buffer.drawBuffer());
+        sb.append("     ");
         sb.append("\n");
         stringBuilder.append(sb.toString());
     }

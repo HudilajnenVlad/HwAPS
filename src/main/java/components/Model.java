@@ -55,15 +55,14 @@ public class Model {
             events.remove(events.firstElement());
             if (requestVector.size() != 0) {
                 if (requestVector.firstElement().getTimeCreate() == currentTime) {
+                    String strErr = new String("");
 
                     Request request = requestVector.firstElement();
-                    //draw.drawLineFirst(request, currentTime,buffer,worker,countOfGenerators);
                     outRequestVector.add(request);
                     requestVector.remove(requestVector.firstElement());
 
                     if (worker.isFreeWorker()) {
                         events.add(worker.putInWorker(request, currentTime));
-                        //draw.drawLineFirst(request, currentTime,buffer,worker,countOfGenerators);
                         events.sort(new Comparator<Double>() {
                             @Override
                             public int compare(Double o1, Double o2) {
@@ -74,9 +73,9 @@ public class Model {
                             }
                         });
                     } else {
-                        buffer.putInBuffer(request, currentTime);
+                        strErr = buffer.putInBuffer(request, currentTime);
                     }
-                   draw.drawLineFirst(request, currentTime, buffer, worker, countOfGenerators);
+                   draw.drawLineFirst(request, currentTime, buffer, worker, countOfGenerators, strErr);
                     continue;
                 }
             }
