@@ -45,18 +45,35 @@ public class Worker {
                 workers.get(i).setTimeWorkerOutput(timeOutput);
                 workers.get(i).setNumOfWorker(i);
                 workersEmployment.set(i, true);
+                break;
             }
         }
         return timeOutput;
     }
 
-    public void freeWorker(double currentTime) {
+    public Request freeWorker(double currentTime) {
         for (int i = 0; i < countOfWorkers; i++) {
             if (workersEmployment.get(i)) {
                 if (Math.abs(workers.get(i).getTimeWorkerOutput() - currentTime) <= epsilon) {
                     workersEmployment.set(i, false);
+                    return workers.get(i);
                 }
             }
         }
+        return null;
+    }
+
+    public String drawWorker() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < countOfWorkers; i++) {
+            if (!workersEmployment.get(i)) {
+                String str = workers.get(i).getRequestNumber();
+                sb.append(str);
+            } else {
+                sb.append("     ");
+            }
+            sb.append("|");
+        }
+        return sb.toString();
     }
 }

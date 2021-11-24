@@ -20,13 +20,26 @@ public class Request {
         this.orderRequest = orderRequest;
     }
 
-    public Request(){};
-    public Request getPlugRequest()
-    {
-        this.timeWorkerOutput = 1;
+    public Request() {
+    }
+
+    ;
+
+    public Request getPlugRequest() {
+        this.timeBufferOutput = 1;
         return this;
     }
+
     public String getRequestNumber() {
-        return numOfGenerator + "." + orderRequest;
+        StringBuilder sb = new StringBuilder();
+        String str = numOfGenerator + "." + orderRequest;
+        if (str.length() == 3) {
+            sb.append(" " + str + " ");
+        } else if (str.length() == 4) {
+            sb.append(" " + str);
+        } else {
+            sb.append(str);
+        }
+        return sb.toString();
     }
 }

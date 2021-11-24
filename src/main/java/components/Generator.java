@@ -14,14 +14,14 @@ public class Generator {
     private int cuntOfRequests;
 
     private double lambda;
-    private Poisson poissonGenerator;
+    private static Poisson poissonGenerator;
 
 
     public Generator(double lambda) {
         this.lambda = lambda;
-        countOfGenerators += 1;
         cuntOfRequests = 0;
         this.numOfGenerator = countOfGenerators;
+        countOfGenerators += 1;
         this.timeInGenerator = 0;
         poissonGenerator = new Poisson(this.lambda, RandomEngine.makeDefault());
     }
