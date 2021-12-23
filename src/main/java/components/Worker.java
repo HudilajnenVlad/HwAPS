@@ -1,20 +1,22 @@
 package components;
 
+import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
+
 import java.util.Random;
 import java.util.Vector;
 
 public class Worker {
-    private int countOfWorkers;
-    private Random random = new Random();
-    private double lambda;
-    private Vector<Request> workers;
-    private Vector<Boolean> workersEmployment;
-    private double epsilon = 0.00001;
+    private final int countOfWorkers;
+    private final Random random = new Random();
+    private final double lambda;
+    private final Vector<Request> workers;
+    private final Vector<Boolean> workersEmployment;
 
-    public Worker(int countOfWorkers, double lambda) {
-        this.lambda = lambda;
-        this.workers = new Vector<Request>();
-        this.workersEmployment = new Vector<Boolean>();
+    public Worker(int countOfWorkers) {
+        this.lambda = 20;
+        this.workers = new Vector<>();
+        this.workersEmployment = new Vector<>();
         this.countOfWorkers = countOfWorkers;
         for (int i = 0; i < countOfWorkers; i++) {
             workers.add(new Request().getPlugRequest());
@@ -31,15 +33,35 @@ public class Worker {
         return false;
     }
 
-    public double getNext() {
-        return 10 * Math.log(1 - random.nextDouble()) / (-lambda);
+    public double getNext(int num) {
+        if (num == 0)
+        {
+            return  1+10*Math.log(1 - random.nextDouble()) / (-lambda);
+        }
+        else if (num == 1)
+        {
+            return  1+8*Math.log(1 - random.nextDouble()) / (-lambda);
+        }
+        else if (num == 2)
+        {
+            return  1+6*Math.log(1 - random.nextDouble()) / (-lambda);
+        }
+        else if (num == 3)
+        {
+            return  1+5*Math.log(1 - random.nextDouble()) / (-lambda);
+        }
+        else if (num == 4)
+        {
+            return  1+4*Math.log(1 - random.nextDouble()) / (-lambda);
+        }
+        return  1+4*Math.log(1 - random.nextDouble()) / (-lambda);
     }
 
     public double putInWorker(Request request, double currentTime) {
-        double timeOutput = 0.0;
+        double timeOutput = currentTime;
         for (int i = 0; i < this.countOfWorkers; i++) {
             if (!workersEmployment.get(i)) {
-                timeOutput = currentTime + getNext();
+                timeOutput = currentTime + getNext(request.getNumOfWorker());
                 workers.set(i, request);
                 workers.get(i).setTimeWorkerInput(currentTime);
                 workers.get(i).setTimeWorkerOutput(timeOutput);
@@ -54,6 +76,7 @@ public class Worker {
     public Request freeWorker(double currentTime) {
         for (int i = 0; i < countOfWorkers; i++) {
             if (workersEmployment.get(i)) {
+                double epsilon = 0.001;
                 if (Math.abs(workers.get(i).getTimeWorkerOutput() - currentTime) <= epsilon) {
                     workersEmployment.set(i, false);
                     return workers.get(i);
@@ -63,17 +86,14 @@ public class Worker {
         return null;
     }
 
-    public String drawWorker() {
-        StringBuilder sb = new StringBuilder();
+    public int drawWorker(GridPane gridPane,int columnIndex  ,int rowIndex ) {
+
         for (int i = 0; i < countOfWorkers; i++) {
             if (workersEmployment.get(i)) {
-                String str = workers.get(i).getRequestNumber();
-                sb.append(str);
-            } else {
-                sb.append("     ");
+                gridPane.add(new Label(workers.get(i).getRequestNumber()),columnIndex,rowIndex);
             }
-            sb.append("|");
+            rowIndex++;
         }
-        return sb.toString();
+        return countOfWorkers;
     }
 }

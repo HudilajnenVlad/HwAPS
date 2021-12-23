@@ -1,6 +1,10 @@
 package components;
 
-import java.util.Comparator;
+import javafx.scene.control.Label;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
+
 import java.util.Random;
 import java.util.Vector;
 
@@ -11,18 +15,26 @@ public class Model {
     private Worker worker;
     private int countOfGenerators;
     private double lambda;
-    private final int defaultCountRequests = 60;
+    private final int defaultCountRequests = 300;
     private final double eps = 0.00001;
     private Draw draw;
+    private GridPane gridPane;
+    private GridPane secGrid;
 
-    public Model(int countOfGenerators, int countOfWorker, int countOfBuffer, double lambda, int mode) {
+
+    public Model(int countOfGenerators, int countOfWorker, int countOfBuffer, double lambda, int mode, GridPane gridPane, GridPane secGrid) {
         this.mode = mode;
         buffer = new Buffer(countOfBuffer);
-        worker = new Worker(countOfWorker, lambda);
-        draw = new Draw(countOfGenerators, countOfBuffer, countOfWorker);
+        worker = new Worker(countOfWorker);
+        if (mode == 1) {
+            draw = new Draw(countOfGenerators, countOfBuffer, countOfWorker, gridPane);
+        }
         this.countOfWorker = countOfWorker;
         this.lambda = lambda;
         this.countOfGenerators = countOfGenerators;
+        this.gridPane = gridPane;
+        this.secGrid = secGrid;
+
     }
 
     private int getRandomNumberOfGenerator(int min, int max) {
@@ -34,18 +46,21 @@ public class Model {
         Vector<Request> requestVector = new Vector<Request>();
         Vector<Generator> generatorVector = new Vector<Generator>();
         for (int i = 0; i < countOfGenerators; i++) {
+
             generatorVector.add(new Generator(this.lambda));
         }
         for (int i = 0; i < defaultCountRequests; i++) {
-            requestVector.add(generatorVector.get(getRandomNumberOfGenerator(0, countOfGenerators)).generateRequest());
+            for (int j = 0; j < countOfGenerators; j++) {
+                requestVector.add(generatorVector.get(j).generateRequest());
+            }
         }
-        requestVector.sort(new Comparator<Request>() {
-            @Override
-            public int compare(Request o1, Request o2) {
-                if (o1.getTimeCreate() - o2.getTimeCreate() < 0)
-                    return -1;
-                else
-                    return 1;
+        requestVector.sort((o1, o2) -> {
+            if (o1.getTimeCreate() - o2.getTimeCreate() < 0)
+                return -1;
+            else if (o1.getTimeCreate() - o2.getTimeCreate() > 0)
+                return 1;
+            else {
+                return 0;
             }
         });
         Vector<Double> events = new Vector<Double>();
@@ -53,33 +68,41 @@ public class Model {
             events.add(i.getTimeCreate());
         }
         Vector<Request> outRequestVector = new Vector<Request>();
-        double currentTime = 0;
+        double currentTime = 0.1;
         while (events.size() != 0) {
-            currentTime = events.firstElement();
-            events.remove(events.firstElement());
-            if (requestVector.size() != 0) {
-                if (requestVector.firstElement().getTimeCreate() == currentTime) {
-                    String strErr = new String("");
+            currentTime = events.remove(0);
+            if (currentTime == 0) {
+                System.out.println("ERROR");
+            }
 
-                    Request request = requestVector.firstElement();
+            if (requestVector.size() != 0) {
+                if (Math.abs(requestVector.firstElement().getTimeCreate() - currentTime) < eps) {
+                    String strErr = "";
+
+                    Request request = requestVector.remove(0);
                     outRequestVector.add(request);
-                    requestVector.remove(requestVector.firstElement());
 
                     if (worker.isFreeWorker()) {
-                        events.add(worker.putInWorker(request, currentTime));
-                        events.sort(new Comparator<Double>() {
-                            @Override
-                            public int compare(Double o1, Double o2) {
-                                if (o1 - o2 < 0)
-                                    return -1;
-                                else
-                                    return 1;
-                            }
+                        double time = worker.putInWorker(request, currentTime);
+                        if (time == 0) {
+                            continue;
+                        }
+                        events.add(time);
+                        events.sort((o1, o2) -> {
+                            if (o1 - o2 < 0)
+                                return -1;
+                            else if (o1 - o2 > 0)
+                                return 1;
+                            else
+                                return 0;
                         });
+
                     } else {
                         strErr = buffer.putInBuffer(request, currentTime);
                     }
-                   draw.drawLineFirst(request, currentTime, buffer, worker, countOfGenerators, strErr);
+                    if (mode == 1) {
+                        draw.drawLineFirst(request, currentTime, buffer, worker, countOfGenerators, strErr);
+                    }
                     continue;
                 }
             }
@@ -87,28 +110,30 @@ public class Model {
             worker.freeWorker(currentTime);
             if (!buffer.isEmpty()) {
                 Request request = buffer.popOutBuffer(currentTime);
-                events.add(worker.putInWorker(request, currentTime));
-                events.sort(new Comparator<Double>() {
-                    @Override
-                    public int compare(Double o1, Double o2) {
-                        if (o1 - o2 < 0)
-                            return -1;
-                        else
-                            return 1;
-                    }
+                double time = worker.putInWorker(request, currentTime);
+                if (time == 0) {
+                    continue;
+                }
+                events.add(time);
+                events.sort((o1, o2) -> {
+                    if (o1 - o2 < 0)
+                        return -1;
+                    else if (o1 - o2 > 0)
+                        return 1;
+                    else
+                        return 0;
                 });
 
             }
-           draw.drawLineSecond(currentTime,buffer, worker,countOfGenerators);
+            if (mode == 1) {
+                draw.drawLineSecond(currentTime, buffer, worker, countOfGenerators);
+            }
 
 
         }
-        if (mode == 1)
-        {
+        if (mode == 1) {
             draw.print();
-        }
-        else
-        {
+        } else {
             int numRequestsInGenerators[] = new int[countOfGenerators];
             int numErrorRequestsInGenerators[] = new int[countOfGenerators];
             double sumBuffTime[] = new double[countOfGenerators];
@@ -118,56 +143,51 @@ public class Model {
             double dispTimeForWorkers[] = new double[countOfGenerators];
             double distTimeForBP[] = new double[countOfGenerators];
             double deadline = currentTime;
-            for (Request i: outRequestVector)
-            {
+            for (Request i : outRequestVector) {
                 numRequestsInGenerators[i.getNumOfGenerator()]++;
-                if (i.getTimeWorkerOutput()==0)
-                {
+                if (i.getTimeWorkerOutput() == 0) {
                     numErrorRequestsInGenerators[i.getNumOfGenerator()]++;
-                }
-                else
-                {
-                    sumBuffTime[i.getNumOfGenerator()]+=i.getTimeBufferOutput()-i.getTimeBufferInput();
-                    sumToWork[i.getNumOfGenerator()]+=i.getTimeWorkerOutput()-i.getTimeWorkerInput();
+                } else {
+                    sumBuffTime[i.getNumOfGenerator()] += i.getTimeBufferOutput() - i.getTimeBufferInput();
+                    sumToWork[i.getNumOfGenerator()] += i.getTimeWorkerOutput() - i.getTimeWorkerInput();
                     countStayTime[i.getNumOfGenerator()]++;
 
-                    dispTimeForWorkers[i.getNumOfGenerator()]+=(i.getTimeBufferOutput()-i.getTimeBufferInput())*(i.getTimeBufferOutput()-i.getTimeBufferInput());
-                    distTimeForBP[i.getNumOfGenerator()]+=(i.getTimeWorkerOutput()-i.getTimeWorkerInput())*(i.getTimeWorkerOutput()-i.getTimeWorkerInput());
+                    dispTimeForWorkers[i.getNumOfGenerator()] += (i.getTimeBufferOutput() - i.getTimeBufferInput()) * (i.getTimeBufferOutput() - i.getTimeBufferInput());
+                    distTimeForBP[i.getNumOfGenerator()] += (i.getTimeWorkerOutput() - i.getTimeWorkerInput()) * (i.getTimeWorkerOutput() - i.getTimeWorkerInput());
 
                 }
-                sumTimeForWorkers[i.getNumOfWorker()] += i.getTimeWorkerOutput()-i.getTimeWorkerInput();
+                sumTimeForWorkers[i.getNumOfWorker()] += i.getTimeWorkerOutput() - i.getTimeWorkerInput();
 
             }
-          /*  for (int i=0; i<countOfGenerators; i++)
-            {
-                System.out.println("Количество заявок в "+i+" источнике: "+numRequestsInGenerators[i]+" Вероятность отказа: "+(double)numErrorRequestsInGenerators[i]/numRequestsInGenerators[i]);
-                System.out.println(String.format("Среднее время пребывание в БП: %.2f Среднее время обслуживания: %.2f Среднее время пребывания заявки в системе: %.2f", sumBuffTime[i]/countStayTime[i], sumToWork[i]/countStayTime[i], sumBuffTime[i]/countStayTime[i] +sumToWork[i]/countStayTime[i]));
-                System.out.println();
+            for (int i = 0; i < 7; i++) {
+                gridPane.getColumnConstraints().add(new ColumnConstraints(50));
             }
-*/
-            StringBuilder sb = new StringBuilder();
-            sb.append("     |Колво|Pотк |Tпреб| Тбп |Tобсл| Дбп |Добсл");
-            for (int i=0; i<countOfGenerators; i++)
-            {
-              sb.append("\n");
-              sb.append("И"+i+"   |");
-              if (numRequestsInGenerators[i]>9)
-              {
-                  sb.append(numRequestsInGenerators[i]+"   ");
-              }
-              else
-              {
-                  sb.append(numRequestsInGenerators[i]+"    ");
-              }
-              sb.append(String.format("|%.2f |",(double)numErrorRequestsInGenerators[i]/numRequestsInGenerators[i]));
-              sb.append(String.format("%.2f |%.2f |%.2f |", sumBuffTime[i]/countStayTime[i] +sumToWork[i]/countStayTime[i], sumBuffTime[i]/countStayTime[i], sumToWork[i]/countStayTime[i]));
-              sb.append(String.format("%.2f |%.2f ", distTimeForBP[i]/countStayTime[i] - (distTimeForBP[i]/(countStayTime[i]*countStayTime[i])),dispTimeForWorkers[i]/countStayTime[i] - (dispTimeForWorkers[i]/(countStayTime[i]*countStayTime[i]))));
-              sb.append("\n");
+            for (int i = 0; i < countOfGenerators; i++) {
+                gridPane.getRowConstraints().add(new RowConstraints(50));
             }
-            System.out.println(sb.toString());
-            for (int i=0; i<countOfWorker;i++)
-            {
-                System.out.println("Коэфициент использования прибора " + i + ": " + sumTimeForWorkers[i]/deadline);
+            for (int i = 0; i < countOfGenerators; i++) {
+                gridPane.add(new Label("И" + i), 0, i + 1);
+            }
+            gridPane.add(new Label(" Колво"), 1, 0);
+            gridPane.add(new Label(" Pотк"), 2, 0);
+            gridPane.add(new Label(" Tпреб"), 3, 0);
+            gridPane.add(new Label(" Тбп"), 4, 0);
+            gridPane.add(new Label(" Tобсл"), 5, 0);
+            gridPane.add(new Label(" Дбп"), 6, 0);
+            gridPane.add(new Label(" Добсл"), 7, 0);
+            for (int i = 0; i < countOfGenerators; i++) {
+
+                gridPane.add(new Label(String.format(" %d", numRequestsInGenerators[i])), 1, i + 1);
+                gridPane.add(new Label(String.format(" %.2f ", (double) numErrorRequestsInGenerators[i] / numRequestsInGenerators[i])), 2, i + 1);
+                gridPane.add(new Label(String.format(" %.2f ", sumBuffTime[i] / countStayTime[i] + sumToWork[i] / countStayTime[i])), 3, i + 1);
+                gridPane.add(new Label(String.format(" %.2f ", sumBuffTime[i] / countStayTime[i])), 4, i + 1);
+                gridPane.add(new Label(String.format(" %.2f ", sumToWork[i] / countStayTime[i])), 5, i + 1);
+                gridPane.add(new Label(String.format(" %.2f ", distTimeForBP[i] / countStayTime[i] - (distTimeForBP[i] / (countStayTime[i] * countStayTime[i])))), 6, i + 1);
+                gridPane.add(new Label(String.format(" %.4f ", dispTimeForWorkers[i] / countStayTime[i] - (dispTimeForWorkers[i] / (countStayTime[i] * countStayTime[i])))), 7, i + 1);
+            }
+            for (int i = 0; i < countOfWorker; i++) {
+                secGrid.getRowConstraints().add(new RowConstraints());
+                secGrid.add(new Label("Коэфициент использования прибора " + i + ": " + sumTimeForWorkers[i] / deadline), 0, i);
             }
 
         }

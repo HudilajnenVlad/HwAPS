@@ -23,7 +23,6 @@ public class Request {
     public Request() {
     }
 
-    ;
 
     public Request getPlugRequest() {
         this.timeBufferOutput = 1;

@@ -1,5 +1,8 @@
 package components;
 
+import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
+
 import java.util.Vector;
 
 public class Buffer {
@@ -89,17 +92,13 @@ public class Buffer {
         return buffer.get(copyIndex);
     }
 
-    public String drawBuffer() {
-        StringBuilder sb = new StringBuilder();
+    public int drawBuffer(GridPane gridPane, int columnIndex, int rowIndex) {
         for (int i = 0; i < countOfBuffers; i++) {
             if (!checkNonEntry(i)) {
-                String str = buffer.get(i).getRequestNumber();
-                sb.append(str);
-            } else {
-                sb.append("     ");
+                gridPane.add(new Label(buffer.get(i).getRequestNumber()),columnIndex ,  rowIndex);
             }
-            sb.append("|");
+            rowIndex++;
         }
-        return sb.toString();
+        return countOfBuffers;
     }
 }

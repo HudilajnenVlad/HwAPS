@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane id="idLayer" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="980.0" minWidth="1720.0" prefHeight="700.0" prefWidth="603.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Scene">
+   <children>
+      <ScrollPane fx:id="scroll" layoutX="8.0" layoutY="2.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="880.0" prefWidth="1720.0" vbarPolicy="ALWAYS" visible="false" vvalue="0.2">
+        <content>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="980.0" prefWidth="1720.0">
+               <children>
+                  <GridPane fx:id="grid" visible="false">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints maxHeight="43.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+                      <RowConstraints maxHeight="35.0" minHeight="10.0" prefHeight="35.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                  </GridPane>
+               </children></AnchorPane>
+        </content>
+      </ScrollPane>
+      <AnchorPane fx:id="front" layoutX="579.0" layoutY="198.0" maxHeight="800.0" maxWidth="1622.0" minHeight="585.0" minWidth="532.0" prefHeight="585.0" prefWidth="532.0" AnchorPane.bottomAnchor="197.0" AnchorPane.leftAnchor="579.0" AnchorPane.rightAnchor="609.0" AnchorPane.topAnchor="198.0">
+         <children>
+            <Text id="text1" layoutX="100.0" layoutY="167.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Источники" AnchorPane.bottomAnchor="391.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="344.900390625" AnchorPane.topAnchor="154.0" />
+            <Text id="text2" layoutX="104.0" layoutY="220.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Приборы" AnchorPane.bottomAnchor="476.0" AnchorPane.leftAnchor="104.0" AnchorPane.rightAnchor="446.869140625" AnchorPane.topAnchor="207.0" />
+            <Text id="text3" layoutX="105.0" layoutY="285.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Буфферы" AnchorPane.bottomAnchor="411.98828125" AnchorPane.leftAnchor="105.0" AnchorPane.rightAnchor="447.0234375" AnchorPane.topAnchor="272.05078125" />
+            <Text id="text4" layoutX="89.0" layoutY="337.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Мат.Ожидание" AnchorPane.bottomAnchor="359.0" AnchorPane.leftAnchor="89.0" AnchorPane.rightAnchor="431.78125" AnchorPane.topAnchor="324.0" />
+            <TextField fx:id="textBox1" layoutX="253.0" layoutY="157.0" prefHeight="25.0" prefWidth="149.0" text="3" />
+            <TextField id="textBox2" fx:id="textBox2" layoutX="253.0" layoutY="203.0" text="3" />
+            <TextField id="textBox3" fx:id="textBox3" layoutX="253.0" layoutY="269.0" text="2" />
+            <TextField id="textBox4" fx:id="textBox4" layoutX="253.0" layoutY="327.0" text="3" />
+            <Button id="stepButton" fx:id="stepButton" layoutX="104.0" layoutY="407.0" mnemonicParsing="false" text="Пошаговый" />
+            <Button id="autoButton" fx:id="autoButton" layoutX="274.0" layoutY="407.0" mnemonicParsing="false" text="Автоматический" />
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="front1" layoutX="14.0" layoutY="14.0" maxHeight="800.0" maxWidth="1622.0" minHeight="585.0" minWidth="532.0" prefHeight="785.0" prefWidth="532.0" visible="false" AnchorPane.bottomAnchor="181.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="1174.0" AnchorPane.topAnchor="14.0">
+         <children>
+            <GridPane fx:id="outGrid" gridLinesVisible="true" prefHeight="277.0" prefWidth="424.0" visible="false">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+            </GridPane>
+            <GridPane fx:id="secGrid" layoutX="14.0" layoutY="739.0" prefHeight="32.0" prefWidth="506.0">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+            </GridPane>
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>

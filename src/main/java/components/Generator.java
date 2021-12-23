@@ -1,6 +1,5 @@
 package components;
 
-
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.RandomEngine;
 
@@ -22,13 +21,13 @@ public class Generator {
         cuntOfRequests = 0;
         this.numOfGenerator = countOfGenerators;
         countOfGenerators += 1;
-        this.timeInGenerator = 0;
+        this.timeInGenerator = 0.1;
         poissonGenerator = new Poisson(this.lambda, RandomEngine.makeDefault());
     }
 
 
     public Request generateRequest() {
-        this.timeInGenerator += poissonGenerator.nextDouble()*0.1;
+        this.timeInGenerator += poissonGenerator.nextDouble();
         this.cuntOfRequests++;
         Request request = new Request(this.timeInGenerator, this.numOfGenerator, this.cuntOfRequests);
         return request;
